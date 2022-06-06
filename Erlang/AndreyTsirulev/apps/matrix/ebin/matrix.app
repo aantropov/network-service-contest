@@ -1,0 +1,9 @@
+{application,matrix,
+             [{description,"Matrix"},
+              {vsn,"0.1"},
+              {modules,[matrix_worker_sup,matrix_worker,matrix_sup,matrix_listen,
+          matrix_lib_tests,matrix_lib,matrix_app,matrix_acceptor_sup,
+          matrix_acceptor]},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {mod,{matrix_app,[]}}]}.

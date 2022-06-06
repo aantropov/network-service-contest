@@ -1,0 +1,23 @@
+
+using Sockets
+
+PORT = 27015
+
+function HandleConnection(conn)
+	N = Int(read(conn, Float32))
+	buf = read(conn, 2*N*N*sizeof(Float32))
+	data = reinterpret(Float32, buf)
+	A = reshape(data[1:N*N], (N,N))
+	B = reshape(data[N*N+1:2*N*N], (N,N))
+	C = A*B
+	write(conn, C)
+	close(conn)
+end
+
+acceptor = listen(PORT)
+println("Linstening on port $PORT, number of threads = $(Threads.nthreads())")
+println("To control number of threads use the environment variable JULIA_NUM_THREADS")
+while true
+	conn = accept(acceptor)
+	@async HandleConnection(conn)
+end

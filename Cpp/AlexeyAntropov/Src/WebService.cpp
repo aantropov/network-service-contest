@@ -112,7 +112,7 @@ struct Task
 
 		for (uint32_t i = 0; i < size; i++)
 		{
-			for (uint32_t j = 0; j < size; j++)
+			for (uint32_t j = i + 1; j < size; j++)
 			{
 				std::swap(m2[i * size + j], m2[j * size + i]);
 			}

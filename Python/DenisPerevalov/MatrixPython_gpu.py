@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #---------------------------------------------------
-# Server for matrix multiplication on Python/pytorch/CUDA
-# v.1.05
+# Server for GPU matrix multiplication on Python/pytorch/CUDA
+# v.1.07
 # @author: denis.perevalov
 #---------------------------------------------------
 #Requirements: GPU
@@ -15,7 +15,7 @@
 #Run: 
 # Start Anaconda, 
 # CMD.exe prompt, 
-# python MatrixPython.py
+# python MatrixPython_gpu.py
 #---------------------------------------------------
 
 import asyncio, socket
@@ -24,7 +24,6 @@ import numpy as np
 import torch
   
 port = 27015
-listen_max_clients = 8 # Limit of incoming clients
 float_size = 4
 
 async def handle_client(client):
@@ -36,7 +35,7 @@ async def handle_client(client):
     
     # Read matrix data
     need_bytes = 2*n*n*float_size
-    print("processing ", n, "x", n)
+    #print("processing ", n, "x", n)
     data = await loop.sock_recv(client,need_bytes)
     while len(data) < need_bytes:
         part = await loop.sock_recv(client,need_bytes - len(data))
@@ -72,11 +71,11 @@ async def handle_client(client):
 
 # Running server
 async def run_server():
-    print("MatrixPython - Starting server for matrix multiplication on CUDA")
+    print("MatrixPython GPU - Starting server for GPU matrix multiplication")
     print("    port:", port)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('localhost', port))
-    server.listen(listen_max_clients) # Limit of incoming clients
+    server.listen() #listen_max_clients) # Limit of incoming clients
     server.setblocking(False)
 
     loop = asyncio.get_event_loop()

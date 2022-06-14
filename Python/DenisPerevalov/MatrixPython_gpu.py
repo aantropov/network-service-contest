@@ -72,9 +72,9 @@ async def handle_client(client):
 # Running server
 async def run_server():
     print("MatrixPython GPU - Starting server for GPU matrix multiplication")
-    print("    port:", port)
+    print("host: ", socket.gethostname(),"    port:", port)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', port))
+    server.bind((socket.gethostname(), port))
     server.listen() #listen_max_clients) # Limit of incoming clients
     server.setblocking(False)
 

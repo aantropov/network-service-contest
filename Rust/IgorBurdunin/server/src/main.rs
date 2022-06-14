@@ -4,6 +4,7 @@ use std::io::{Read, Write};
 use byteorder::{ByteOrder, LittleEndian, BigEndian}; 
 use std::sync::{mpsc, Arc};
 use std::cmp;
+use std::env;
 
 extern crate num_cpus;
 struct Worker {
@@ -116,7 +117,9 @@ fn handle_client(mut stream: TcpStream) {
 }
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:27015").unwrap();
+    let args: Vec<_> = env::args().collect();
+
+    let listener = TcpListener::bind("0.0.0.0:27015").unwrap();
     println!("Server listening on port 27015");
     for stream in listener.incoming() {
         match stream {

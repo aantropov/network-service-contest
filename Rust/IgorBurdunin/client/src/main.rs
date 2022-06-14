@@ -3,17 +3,43 @@ use std::io::{Read, Write};
 use std::time::{Instant};
 use std::cmp;
 use std::ptr;
-
+use std::env;
 use rand::Rng;
 
 fn main() {
-    let tries: u32 = 128;
+    let args: Vec<_> = env::args().collect();
+
+    let mut tries: u32 = 1;
     let mut acc: u128 = 0;
     let mut acc_size: u32 = 0;
     let mut max_time: u128 = 0;
+    let mut size = 1 as i32;
+    let mut server = "123";
+    let mut diespercion = 0 as f32;
+
+    if args.len() > 1
+    {
+        size = args[1].parse().unwrap();
+    }
+
+    if args.len() > 2
+    {
+        diespercion = args[2].parse().unwrap();
+    }
+
+    if args.len() > 3
+    {
+        tries = args[3].parse().unwrap();
+    }
+
+    if args.len() > 4
+    {
+        server = &(args[4])[..];
+    }
+
 	for i in 0..tries
 	{
-        let (time, size) = ClientTask();
+        let (time, size) = ClientTask(size, server, diespercion);
         acc_size += size;
         max_time = cmp::max(max_time, time);
 
@@ -23,12 +49,12 @@ fn main() {
     println!("Terminated.");
 }
 
-fn ClientTask() -> (u128, u32)
+fn ClientTask(sz:i32, server:&str, diespertion: f32) -> (u128, u32)
 {
-    match TcpStream::connect("127.0.0.1:27015") {
+    match TcpStream::connect(server) {
         Ok(mut stream) => {
             let mut rng = rand::thread_rng();
-            let mut size: u32  = 200 + rng.gen::<u32>() % 200;
+            let mut size: u32  = sz as u32;
 
             let mut msg = vec![0 as f32; 1 + size as usize * size as usize * 2];
             let ptr_msg = msg.as_mut_ptr();

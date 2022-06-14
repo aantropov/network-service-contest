@@ -1,8 +1,9 @@
 use std::thread::{self, JoinHandle};
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
-use byteorder::{ByteOrder, LittleEndian}; 
+use byteorder::{ByteOrder, LittleEndian, BigEndian}; 
 use std::sync::{mpsc, Arc};
+use std::cmp;
 
 extern crate num_cpus;
 struct Worker {
@@ -11,13 +12,15 @@ struct Worker {
 }
 
 fn handle_client(mut stream: TcpStream) {
-    let num_cores = num_cpus::get();
+    let mut  num_cores = num_cpus::get();
 
     let mut data_size =  [0 as u8; 4];
     match stream.read(&mut data_size) {
         Ok(size) => {
             let raw_size = LittleEndian::read_f32(&mut data_size) as u32;
             let buffer_size = raw_size as usize;
+
+            num_cores = cmp::min(num_cores, buffer_size);
 
             let mut data = vec![0 as u8; buffer_size * buffer_size * 2 * 4];
             let mut acc = 0;
@@ -46,11 +49,7 @@ fn handle_client(mut stream: TcpStream) {
                         for thr in 0..num_cores
                         {
                             let index_begin = (thr as f32 * chunk_size) as usize;
-                            let mut index_end = ((thr + 1) as f32 * chunk_size) as usize;
-                            if thr == num_cores - 2
-                            {
-                                index_end = buffer_size;
-                            }
+                            let index_end = ((thr + 1) as f32 * chunk_size) as usize;
 
                             let tx = tx.clone();
                             let amat1 = Arc::clone(&amat1);
@@ -71,7 +70,7 @@ fn handle_client(mut stream: TcpStream) {
                                             }
 
 
-                                            ans[i + index_begin + j] = acc;    
+                                            ans[i * buffer_size + j] = acc;    
                                         }
                                     }
 
@@ -99,7 +98,6 @@ fn handle_client(mut stream: TcpStream) {
                         false
                     }
                     else {
-                        println!("acc value - {}", acc);
                         true
                     }
                 },
@@ -123,7 +121,6 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                println!("New connection: {}", stream.peer_addr().unwrap());
                 thread::spawn(move|| {
                     handle_client(stream)
                 });

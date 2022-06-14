@@ -128,7 +128,7 @@ struct Task
 					val += m1[i * size + j] * m2[k * size + j];
 				}
 
-				res[i + k * size] = val;
+				res[k + i * size] = val;
 			}
 		}
 

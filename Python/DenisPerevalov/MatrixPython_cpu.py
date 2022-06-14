@@ -27,7 +27,7 @@ async def handle_client(client):
 async def run_server():
     print("Starting MatrixPython CPU at port:", port)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', port))
+    server.bind((socket.gethostname(), port))
     server.listen()
     server.setblocking(False)
 

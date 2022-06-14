@@ -6,7 +6,7 @@ import "net"
 import "unsafe"
 import "io/ioutil"
 
-const HOST = "localhost"
+const HOST = ""
 const PORT = "27015"
 
 func HandleClient(conn net.Conn) {

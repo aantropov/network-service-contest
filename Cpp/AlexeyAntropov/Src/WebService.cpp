@@ -38,7 +38,7 @@ struct Client
 				if (res.size() == 0)
 				{
 					uint32_t size = (uint32_t) * reinterpret_cast<float*>(recvbuf);
-					res.resize(1u + size * size * 2u);
+					res.resize(1u + size * size * 3u);
 				}
 
 				memcpy(&res[offset], recvbuf, iResult);
@@ -92,24 +92,26 @@ struct Task
 	uint32_t size;
 	float* m1;
 	float* m2;
+	float* m3;
 
-	__forceinline void Deserialize(std::vector<float>& res)
+	__forceinline uint32_t Deserialize(std::vector<float>& res)
 	{
 		if (res.size() < 3)
 		{
-			return;
+			return 0;
 		}
 
 		size = (uint32_t)res[0];
 
 		m1 = &res[1];
 		m2 = &res[size * size + 1];
+		m3 = &res[2 * size * size + 1];
+
+		return size * size;
 	}
 
-	__forceinline std::vector<float> Multiply()
+	__forceinline float* Multiply()
 	{
-		std::vector<float> res(size * size);
-
 		for (uint32_t i = 0; i < size; i++)
 		{
 			for (uint32_t j = i + 1; j < size; j++)
@@ -128,11 +130,11 @@ struct Task
 					val += m1[i * size + j] * m2[k * size + j];
 				}
 
-				res[k + i * size] = val;
+				m3[k + i * size] = val;
 			}
 		}
 
-		return res;
+		return m3;
 	}
 
 	__forceinline void Process()
@@ -142,9 +144,9 @@ struct Task
 		client.Read(binary);
 		if (client.m_bIsConnected)
 		{
-			Deserialize(binary);
-			std::vector<float> sendBytes = Multiply();
-			client.Send((uint32_t)sendBytes.size() * 4, (const char*)(&sendBytes[0]));
+			uint32_t matrixSize = Deserialize(binary);
+			float* sendBytes = Multiply();
+			client.Send(matrixSize * 4, (const char*)(sendBytes));
 		}
 		client.Close();
 	}

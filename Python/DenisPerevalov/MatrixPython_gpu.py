@@ -60,7 +60,7 @@ async def handle_client(client):
     # pytorch/CUDA multiplication:
     A = torch.from_numpy(A).to("cuda")
     B = torch.from_numpy(B).to("cuda")
-    C = (A*B).to("cpu").numpy()
+    C = (torch.matmul(A,B)).to("cpu").numpy()
     
     # Send response
     # print("   C",C.shape)
@@ -74,7 +74,16 @@ async def run_server():
     print("MatrixPython GPU - Starting server for GPU matrix multiplication")
     print("host: ", socket.gethostname(),"    port:", port)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((socket.gethostname(), port))
+
+    # use for connection from local machine
+    print("   local connections")
+    server.bind(('localhost', port))  
+    
+    # use for connection from other machine
+    #print("   external connections")
+    #server.bind((socket.gethostname(), port)) 
+
+    
     server.listen() #listen_max_clients) # Limit of incoming clients
     server.setblocking(False)
 

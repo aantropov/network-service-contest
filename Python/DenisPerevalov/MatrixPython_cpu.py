@@ -19,15 +19,24 @@ async def handle_client(client):
         return
     
     data = np.frombuffer(data, dtype=np.float32) 
-    response = (data[0:N*N].reshape(N,N)*data[N*N:].reshape(N,N)).tobytes()
-    
+    A = data[0:N*N].reshape(N,N)
+    B = data[N*N:].reshape(N,N)
+    response = (np.matmul(A,B)).tobytes()
     await loop.sock_sendall(client, response)
     client.close()
 
 async def run_server():
     print("Starting MatrixPython CPU at port:", port)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((socket.gethostname(), port))
+    
+    # use for connection from local machine
+    print("   local connections")
+    server.bind(('localhost', port))  
+    
+    # use for connection from other machine
+    #print("   external connections")
+    #server.bind((socket.gethostname(), port)) 
+    
     server.listen()
     server.setblocking(False)
 
